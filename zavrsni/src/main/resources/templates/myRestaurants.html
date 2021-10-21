@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        body {
+            padding-top: 56px;
+        }
+        #map{
+            height:300px;
+            width:100%;
+        }
+        .weekDays-selector input {
+  display: none!important;
+}
+
+.weekDays-selector input[type=checkbox] + label {
+  display: inline-block;
+  border-radius: 6px;
+  background: #dddddd;
+  height: 40px;
+  width: 30px;
+  margin-right: 3px;
+  line-height: 40px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.weekDays-selector input[type=checkbox]:checked + label {
+  background: #2AD705;
+  color: #ffffff;
+}
+
+
+
+
+
+
+
+    </style>
+    <title>Restaurants</title>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="/home">Food Delivery System</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/home">Home
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item ">
+                    <span class="navbar-text" sec:authorize="isAuthenticated()" sec:authentication="name"
+                          style="padding-right:7px;padding-left:5px;">
+                    </span>
+                </li>
+                <li class="nav-item active">
+                    <form class="form-inline" th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+                        <button type="submit" class="btn btn-secondary">Sign out</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<!-- Page Content -->
+<div class="container" style="min-height:75vh">
+
+    <!-- Page Heading -->
+    <h1 class="my-4">Restaurant list
+        <small>Here you will find the list of your restaurants</small>
+    </h1>
+    <div class="container" th:if="${message}!=null">
+        <div class="row">
+            <div class="col center-block" style="margin-top:30px;">
+                <h1>
+                    <p class="lead text-center" th:text="${message}" style="font-size:15px;"></p>
+                </h1>
+            </div>
+        </div>
+    </div>
+    <div class="container" th:if="${#lists.isEmpty(restaurantList)}">
+        <div class="row">
+            <div class="col center-block" style="margin-top:30px;">
+                <h1>
+                    <p class="lead text-center" style="font-size:30px;">You have no restaurants yet.</p>
+                </h1>
+                </br>
+                </br>
+            </div>
+        </div>
+    </div>
+    <div th:unless="${#lists.isEmpty(restaurantList)}" th:each="restaurant : ${restaurantList}">
+        <!-- Project One -->
+        <div class="row">
+            <div class="col-md-7">
+                <a href="#">
+                    <img class="img-fluid rounded mb-3 mb-md-0"
+                         th:src="@{'https://s3.eu-central-1.amazonaws.com/zavrsniradrestaurants/'+${restaurant.owner.id}+'-'+${restaurant.id}+'.jpg'}"
+                         alt="">
+                </a>
+            </div>
+            <div class="col-md-5">
+                <div class="row">
+                    <h3 th:text="${restaurant.name}">...</h3>
+
+                </div>
+                </br>
+                </br>
+                <div class="row" style="font-size:16px;">
+                    <p th:text="${restaurant.description}"></p>
+                </div>
+                </br>
+                <div class="row" style="font-size:20px;">
+                    <pre><strong><i> Open days :  </i></strong></pre>
+                    <p th:text="${restaurant.openDays}"></p>
+                </div>
+                <div class="row" style="font-size:20px;">
+                    <pre><strong><i> Open hours :  </i></strong></pre>
+                    <p th:text="${restaurant.openFrom}"></p>
+                    <pre>  -  </pre>
+                    <p th:text="${restaurant.openUntil}"></p>
+                </div>
+                </br>
+                <div class="row">
+                    <div class="col">
+                        <a class="btn btn-outline-primary" href="#"
+                           th:href="@{/setRestaurantMenu(restaurant=${restaurant.id})}">Manage
+                            restaurant</a>
+                    </div>
+                    <div class="col">
+                        <a class="btn btn-outline-danger" href="#"
+                           th:href="@{/removeRestaurant(restaurant=${restaurant.id})}">Remove</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+        <hr>
+
+    </div>
+
+    <div class="row" sec:authorize="hasRole('ROLE_OWNER')" id="addButton">
+        <div class="col-sm-6 text-center">
+            <label><strong><i>Add a new restaurant:</i></strong></label></br>
+        </div>
+        <div class="col-sm-6 text-center">
+            <button class="btn btn-outline-secondary" onclick="showForm()">Add a restaurant
+            </button>
+            </br>
+            </br>
+        </div>
+    </div>
+    <div class="container" id="itemForm" style="display:none;" sec:authorize="hasRole('ROLE_OWNER')">
+        <!-- Default form contact -->
+        <form class="text-center border border-light p-5" action="#"
+              th:action="@{/my-restaurants}" th:object="${formRestaurant}" method="post" enctype="multipart/form-data"
+              style="border:3px solid grey">
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label"><strong>Restaurant name</strong></label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control mb-4" th:field="*{name}" placeholder="Red Lobster" required>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label"><strong>Open days</strong></label>
+                <div class="col-sm-10">
+                    <div class="weekDays-selector">
+                        <input type="checkbox" id="weekday-mon" class="weekday" name="monday" value="working"
+                               onclick="checkWeekDays()"/>
+                        <label for="weekday-mon">M</label>
+                        <input type="checkbox" id="weekday-tue" class="weekday" name="tuesday" value="working"
+                               onclick="checkWeekDays()"/>
+                        <label for="weekday-tue">T</label>
+                        <input type="checkbox" id="weekday-wed" class="weekday" name="wednesday" value="working"
+                               onclick="checkWeekDays()"/>
+                        <label for="weekday-wed">W</label>
+                        <input type="checkbox" id="weekday-thu" class="weekday" name="thursday" value="working"
+                               onclick="checkWeekDays()"/>
+                        <label for="weekday-thu">T</label>
+                        <input type="checkbox" id="weekday-fri" class="weekday" name="friday" value="working"
+                               onclick="checkWeekDays()"/>
+                        <label for="weekday-fri">F</label>
+                        <input type="checkbox" id="weekday-sat" class="weekday" name="saturday" value="working"
+                               onclick="checkWeekDays()"/>
+                        <label for="weekday-sat">S</label>
+                        <input type="checkbox" id="weekday-sun" class="weekday" name="sunday" value="working"
+                               onclick="checkWeekDays()"/>
+                        <label for="weekday-sun">S</label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label"><strong>Open hours:</strong></label>
+                <div class="col-sm-4">
+                    <input class="form-control" type="time" th:field="*{openFrom}" required>
+                </div>
+                <div class="col-sm-2">
+                    <p> until :</p>
+                </div>
+                <div class="col-sm-4">
+                    <input class="form-control" type="time" th:field="*{openUntil}" required>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label"><strong>Description</strong></label>
+                <div class="col-sm-10">
+                    <textarea rows="3" class="form-control mb-4" th:field="*{description}"
+                              placeholder="e.q. A nice family restaurant serving chinese food.." required></textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-10 col-form-label"><i>Provide the location by placing a marker on
+                    the map or entering the address in the field below</i></label>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label"><strong>Location</strong></label>
+                <div class="col-sm-10" id="map" style="border-style:groove;">
+                    <!-- The map goes here-->
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label"><strong>Location</strong><i>(address)</i></label>
+                <div class="col-sm-5">
+                    <input type="text" id="location" name="location" required/>
+                </div>
+                <div class="col-sm-5">
+                    <button type="button" class="btn btn-warning" onclick="geocode()">Check the address</button>
+                </div>
+            </div>
+            <div class="form-group row">
+                <input id="coordinates" type="hidden" class="form-control mb-4" th:field="*{coordinates}" required>
+            </div>
+            <div class="form-group row">
+                <input id="openDays" type="hidden" class="form-control mb-4" th:field="*{openDays}" required>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label"><strong>Restaurant image</strong></label>
+                <div class="col-sm-10">
+                    <input type="file" name="file" required>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-7">
+                    <button  id="subRest" class="btn btn-success" type="submit" style="float: left;" disabled>Add a restaurant</button>
+                </div>
+                <div class="col-sm-5">
+                    <button class="btn btn-secondary" onclick="hideForm()" style="float: right;">Hide</button>
+                </div>
+            </div>
+
+
+        </form>
+    </div>
+</div>
+<!-- /.container -->
+<!-- Footer -->
+<footer class="py-5 bg-dark ">
+    <div class="container">
+        <p class="m-0 text-center text-white">Copyright &copy; Kristijan Vrbanc, 2019</p>
+    </div>
+    <!-- /.container -->
+</footer>
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+   //calling Geocoding API
+  function geocode(){
+    var location=document.getElementById('location').value;
+    axios.get('https://maps.googleapis.com/maps/api/geocode/json',{
+        params:{
+            address:location,
+            key:'AIzaSyCWpiFQMp3bI7-CrQJNd8bJ0SAU5BBj5Ag'
+        }
+     })
+     .then(function(response){
+            console.log(response);
+            var lat=response.data.results[0].geometry.location.lat;
+            var lng=response.data.results[0].geometry.location.lng;
+            var locationLatLng='('+lat+','+lng+')';
+            addMarker(locationLatLng);
+            coordinatesText=document.getElementById('coordinates');
+            coordinatesText.value=locationLatLng.toString();
+            enableKey();
+     })
+     .catch(function(error){
+        console.log(error);
+     });
+
+  }
+
+  //calling reverse Geocode
+  function reverseGeocode(latLng){
+       var x=latLng.split(',');
+        var lat=x[0].split('\(');
+        var lng=x[1].split('\)');
+        var LatLng=lat[1]+','+lng[0];
+    axios.get('https://maps.googleapis.com/maps/api/geocode/json',{
+        params:{
+            latlng:LatLng,
+            key:'AIzaSyCWpiFQMp3bI7-CrQJNd8bJ0SAU5BBj5Ag'
+        }
+     })
+     .then(function(response){
+            enableKey();
+            var formattedAddress=response.data.results[0].formatted_address;
+            var x=document.getElementById('location');
+            x.value=formattedAddress;
+     })
+     .catch(function(error){
+        console.log(error);
+     });
+  }
+
+
+  function showForm() {
+  var x = document.getElementById("itemForm");
+  x.style.display = "block";
+  var y= document.getElementById("addButton");
+  y.style.display = "none";
+  }
+
+  function hideForm() {
+  var x = document.getElementById("itemForm");
+  x.style.display = "none";
+  var y= document.getElementById("addButton");
+  y.style.display = "inline";
+  }
+  var map;
+  var marker;
+  function initMap() {
+     map = new google.maps.Map(document.getElementById('map'), {
+       center: {lat: 45.8150, lng: 15.9819},
+       zoom: 13
+     });
+     //Adding markers on click
+     google.maps.event.addListener(map, 'click', function(event) {
+            addMarker(event.latLng.toString());
+            reverseGeocode(event.latLng.toString());
+            coordinatesText=document.getElementById('coordinates');
+            coordinatesText.value=event.latLng.toString();
+            var x=document.getElementById('subRest');
+            x.disabled=false;
+     });
+  }
+
+  //Add Marker Function
+  function addMarker(location){
+        var x=location.split(',');
+        var lat=x[0].split('\(');
+        var lng=x[1].split('\)');
+        if (!marker || !marker.setPosition) {
+            marker = new google.maps.Marker({
+                position: new google.maps.LatLng(parseFloat(lat[1]), parseFloat(lng[0])),
+                map: map,
+                icon:'http://maps.google.com/mapfiles/kml/pal2/icon46.png'
+            });
+            map.setCenter(new google.maps.LatLng(parseFloat(lat[1]), parseFloat(lng[0])));
+        console.log(location);
+        } else {
+            marker.setPosition(new google.maps.LatLng(parseFloat(lat[1]), parseFloat(lng[0])));
+            map.setCenter(new google.maps.LatLng(parseFloat(lat[1]), parseFloat(lng[0])));
+            console.log(location);
+        }
+
+  }
+
+  function checkWeekDays(){
+    var m=document.getElementById('weekday-mon');
+    var t=document.getElementById('weekday-tue');
+    var w=document.getElementById('weekday-wed');
+    var th=document.getElementById('weekday-thu');
+    var f=document.getElementById('weekday-fri');
+    var s=document.getElementById('weekday-sat');
+    var sun=document.getElementById('weekday-sun');
+    var openDays='';
+    if(m.checked){
+        openDays+='  M  ';
+    }
+    if(t.checked){
+        openDays+='  T  ';
+    }
+    if(w.checked){
+        openDays+='  W  ';
+    }
+    if(th.checked){
+        openDays+='  THU  ';
+    }
+    if(f.checked){
+        openDays+='  F  ';
+    }
+    if(s.checked){
+        openDays+='  SAT  ';
+    }
+    if(sun.checked){
+        openDays+='  SUN  ';
+    }
+    var q=document.getElementById('openDays');
+    q.value=openDays;
+    console.log(openDays);
+
+  }
+
+  function enableKey(){
+        var y=document.getElementById('subRest');
+        y.disabled=false;
+  }
+
+
+
+
+
+
+
+
+
+</script>
+<!-- Google maps scripts -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCWpiFQMp3bI7-CrQJNd8bJ0SAU5BBj5Ag&callback=initMap"
+        async defer></script>
+</body>
+</html>

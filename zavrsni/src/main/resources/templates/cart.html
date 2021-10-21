@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <!-- Custom Css-->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <title>Shopping cart</title>
+    <style>
+        body {
+            padding-top: 56px;
+        }
+
+        #map{
+            height:300px;
+            width:100%;
+        }
+
+    </style>
+</head>
+
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="/home">Food Delivery System</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/home">Home
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="#" th:href="@{/restaurant-list}"
+                       sec:authorize="!(hasRole('ROLE_OWNER') || hasRole('ROLE_WORKER'))">Restaurants
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item ">
+                    <span class="navbar-text" sec:authorize="isAuthenticated()" sec:authentication="name"
+                          style="padding-right:7px;padding-left:5px;">
+                    </span>
+                </li>
+                <li class="nav-item active">
+                    <form class="form-inline" th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+                        <button type="submit" class="btn btn-secondary">Sign out</button>
+                    </form>
+                </li>
+                <li class="nav-item active">
+                    <form class="form-inline" th:action="@{/shopping-cart}" sec:authorize="hasRole('ROLE_USER')"
+                          method="get">
+                        <button type="submit" class="btn btn-light" style="margin-left:5px;"><img
+                                src="https://image.flaticon.com/icons/svg/2/2772.svg" height="18px" width="18px"/>
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<!-- Page Content -->
+<div class="container" style="min-height:75vh">
+    <div class="container" th:if="${message}!=null">
+        <div class="row">
+            <div class="col center-block" style="margin-top:30px;">
+                <h1>
+                    <p class="lead text-center" th:text="${message}" style="font-size:30px;color:green;"></p>
+                </h1>
+            </div>
+        </div>
+    </div>
+    <div class="container" th:if="${#lists.isEmpty(items)} and ${message}==null">
+        <div class="row">
+            <div class="col center-block" style="margin-top:30px;">
+                <h1>
+                    <p class="lead text-center" style="font-size:30px;">You have nothing in your shopping cart.</p>
+                </h1>
+            </div>
+        </div>
+    </div>
+    <table id="cart" class="table table-hover table-condensed" th:unless="${#lists.isEmpty(items)}">
+        <thead>
+        <tr>
+            <th style="width:50%">Product</th>
+            <th style="width:10%">Price</th>
+            <th style="width:8%">Quantity</th>
+            <th style="width:22%" class="text-center">Subtotal</th>
+            <th style="width:10%"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="ordered : ${items}">
+            <td data-th="Product">
+                <div class="row">
+                    <div class="col-sm-2 hidden-xs"><img
+                            th:src="@{'https://s3.eu-central-1.amazonaws.com/zavrsniraditems/'+${ordered.restaurantId}+'-'+${ordered.itemId}+'.jpg'}"
+                            alt="..." class="img-responsive" height="50px" width="50px"/></div>
+                    <div class="col-sm-10">
+                        <h4 class="nomargin" th:text="${ordered.name}">Product </h4>
+                    </div>
+                </div>
+            </td>
+            <td data-th="Price" th:text="${ordered.price}+' kn'"></td>
+            <td data-th="Quantity" class="row">
+
+                <form th:action="@{/change-quantity(id=${ordered.id})}" method="post">
+                    <input type="number" th:id="quantity" th:name="quantity" class="form-control"
+                           th:value="${ordered.quantity}"/>
+                    <button class="btn btn-info btn-sm" type="submit" style="margin-top:2px;"><p>Change Qty.</p>
+                    </button>
+                </form>
+
+            </td>
+            <td data-th="Subtotal" class="text-center" th:text="${ordered.subTotal}+' kn'"></td>
+            <td class="actions" data-th="">
+                <form th:action="@{/remove-item(id=${ordered.id})}" method="post">
+                    <button class="btn btn-danger btn-sm" type="submit"><i class="fa fa-trash-o"></i></button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr>
+            <td><a id="continue" href="/restaurant-list" class="btn btn-warning"><i class="fa fa-angle-left"></i>
+                Continue Shopping</a></td>
+            <td colspan="2" class="hidden-xs"></td>
+            <td class="hidden-xs text-center"><strong><p th:text="'Total: '+${total}+' kn'"></p></strong></td>
+            <td><a href="#" id="submit1" onclick="showForm()" class="btn btn-success btn-block">Checkout</a></td>
+        </tr>
+        </tfoot>
+    </table>
+    <div class="container" id="itemForm" style="display:none;">
+        <div class="column">
+            <form th:action="@{/place-order}" method="post">
+                <div class="row">
+                    <h4>Provide the location for your delivery:</h4>
+                </div>
+                <div class="row">
+                    <h4><small>(provide the address in the input field below or place a marker on the map)</small></h4>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <input type="text" id="location" name="location" required/>
+                        <button type="button" class="btn btn-warning" onclick="geocode()">Check address</button>
+                    </div>
+                    <div class="col"></div>
+                    <div class="col">
+                    </div>
+                </div>
+                <div class="row" id="map" style="border-style:groove;">
+                    <!-- the map goes here -->
+                </div>
+                <div class="row">
+                    <input type="hidden" id="coordinates" name="coordinates" required>
+                </div>
+                <div class="row" style="margin:15px;">
+                    <div class="col"></div>
+                    <div class="col"></div>
+                    <div class="col"></div>
+                    <div class="col"></div>
+                    <div class="col"></div>
+                    <div class="col">
+                        <button id="submit2" type="submit" class="btn btn-success btn-block" disabled>Checkout ></button>
+                    </div>
+
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+</div>
+
+</div>
+
+<!-- /.container -->
+<!-- Footer -->
+<footer class="py-5 bg-dark ">
+    <div class="container">
+        <p class="m-0 text-center text-white">Copyright &copy; Kristijan Vrbanc 2019</p>
+    </div>
+    <!-- /.container -->
+</footer>
+
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+//calling Geocoding API
+  function geocode(){
+    var location=document.getElementById('location').value;
+    axios.get('https://maps.googleapis.com/maps/api/geocode/json',{
+        params:{
+            address:location,
+            key:'AIzaSyCWpiFQMp3bI7-CrQJNd8bJ0SAU5BBj5Ag'
+        }
+     })
+     .then(function(response){
+            console.log(response);
+            var lat=response.data.results[0].geometry.location.lat;
+            var lng=response.data.results[0].geometry.location.lng;
+            var locationLatLng='('+lat+','+lng+')';
+            addMarker(locationLatLng);
+            coordinatesText=document.getElementById('coordinates');
+            coordinatesText.value=locationLatLng.toString();
+     })
+     .catch(function(error){
+        console.log(error);
+     });
+
+  }
+
+//calling reverse Geocode
+  function reverseGeocode(latLng){
+       var x=latLng.split(',');
+        var lat=x[0].split('\(');
+        var lng=x[1].split('\)');
+        var LatLng=lat[1]+','+lng[0];
+    axios.get('https://maps.googleapis.com/maps/api/geocode/json',{
+        params:{
+            latlng:LatLng,
+            key:'AIzaSyCWpiFQMp3bI7-CrQJNd8bJ0SAU5BBj5Ag'
+        }
+     })
+     .then(function(response){
+            var formattedAddress=response.data.results[0].formatted_address;
+            var x=document.getElementById('location');
+            x.value=formattedAddress;
+     })
+     .catch(function(error){
+        console.log(error);
+     });
+  }
+function goBack() {
+  window.history.back();
+}
+    function showForm() {
+  var x = document.getElementById("itemForm");
+  x.style.display = "block";
+  var y= document.getElementById("submit1");
+  y.style.display = "none";
+  var z= document.getElementById("continue");
+  z.style.display = "none";
+  }
+  var map;
+  var marker;
+  function initMap() {
+     map = new google.maps.Map(document.getElementById('map'), {
+       center: {lat: 45.8150, lng: 15.9819},
+       zoom: 13
+     });
+     //Adding markers on click
+     google.maps.event.addListener(map, 'click', function(event) {
+            addMarker(event.latLng.toString());
+            reverseGeocode(event.latLng.toString());
+            coordinatesText=document.getElementById('coordinates');
+            coordinatesText.value=event.latLng.toString();
+
+     });
+  }
+
+  //Add Marker Function
+  function addMarker(location){
+        var x=location.split(',');
+        var lat=x[0].split('\(');
+        var lng=x[1].split('\)');
+        if (!marker || !marker.setPosition) {
+            marker = new google.maps.Marker({
+                position: new google.maps.LatLng(parseFloat(lat[1]), parseFloat(lng[0])),
+                map: map,
+                icon:'http://maps.google.com/mapfiles/kml/pal2/icon46.png'
+            });
+            map.setCenter(new google.maps.LatLng(parseFloat(lat[1]), parseFloat(lng[0])));
+        console.log(location);
+        } else {
+            marker.setPosition(new google.maps.LatLng(parseFloat(lat[1]), parseFloat(lng[0])));
+            map.setCenter(new google.maps.LatLng(parseFloat(lat[1]), parseFloat(lng[0])));
+            console.log(location);
+        }
+        var pom=document.getElementById('submit2');
+        pom.disabled=false;
+  }
+
+</script>
+
+<!-- Google maps scripts -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCWpiFQMp3bI7-CrQJNd8bJ0SAU5BBj5Ag&callback=initMap"
+        async defer></script>
+</body>
+</html>

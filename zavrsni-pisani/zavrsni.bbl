@@ -1,0 +1,62 @@
+\begin{thebibliography}{9}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Dif()]{Differen48:online}
+An introduction to the java ee platform.
+\newblock \url{https://docs.oracle.com/javaee/6/firstcup/doc/gkhoy.html}.
+\newblock (01/06/2019).
+
+\bibitem[Dyn()]{Dynamicp76:online}
+Dynamic programming language.
+\newblock
+  \url{https://developer.mozilla.org/en-US/docs/Glossary/Dynamic_programming_language}.
+\newblock (26/05/2019).
+
+\bibitem[Get({\natexlab{a}})]{GetStart0:online}
+Geocoding api.
+\newblock
+  \url{https://developers.google.com/maps/documentation/geocoding/start},
+  {\natexlab{a}}.
+\newblock (27/05/2019).
+
+\bibitem[Get({\natexlab{b}})]{GetStart97:online}
+Directions api.
+\newblock
+  \url{https://developers.google.com/maps/documentation/directions/start},
+  {\natexlab{b}}.
+\newblock (27/05/2019).
+
+\bibitem[Int()]{Introduc43:online}
+Bootstrap: Introduction.
+\newblock
+  \url{https://getbootstrap.com/docs/4.3/getting-started/introduction/}.
+\newblock (27/05/2019).
+
+\bibitem[Ove()]{Overview86:online}
+Maps javascript api.
+\newblock
+  \url{https://developers.google.com/maps/documentation/javascript/tutorial}.
+\newblock (27/05/2019).
+
+\bibitem[Pos()]{PostgreS70:online}
+Postgresql: About.
+\newblock \url{https://www.postgresql.org/about/}.
+\newblock (04/06/2019).
+
+\bibitem[Spr()]{SpringFr9:online}
+Spring framework overview.
+\newblock
+  \url{https://docs.spring.io/spring/docs/current/spring-framework-reference/overview.html}.
+\newblock (01/06/2019).
+
+\bibitem[UML()]{UMLdijag64:online}
+Uml-dijagrami: zbirka riješenih zadataka.
+\newblock
+  \url{http://www.graphis.hr/news/uml-dijagrami/uml_dijagrami_za_web.pdf}.
+\newblock (10/05/2019).
+
+\end{thebibliography}

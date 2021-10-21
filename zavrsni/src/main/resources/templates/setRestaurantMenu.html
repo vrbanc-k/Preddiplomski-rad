@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Restaurant menu</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <!-- Custom styles for this template -->
+    <style>
+        body {
+            padding-top: 56px;
+        }
+        #map{
+            height:230px;
+            width:100%;
+        }
+    </style>
+
+</head>
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="/home">Food Delivery System</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/home">Home
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="#" th:href="@{/login}" th:if="${#httpServletRequest.remoteUser}==null">Login
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="#" th:href="@{/register}" th:if="${#httpServletRequest.remoteUser}==null" >Register
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="#" th:href="@{/my-restaurants}" sec:authorize="hasRole('ROLE_OWNER')">My
+                        restaurants
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="#" th:href="@{/restaurant-list}"
+                       sec:authorize="!(hasRole('ROLE_OWNER') || hasRole('ROLE_WORKER'))">Restaurants
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item ">
+                    <span class="navbar-text" sec:authorize="isAuthenticated()" sec:authentication="name"
+                          style="padding-right:7px;padding-left:5px;">
+                    </span>
+                </li>
+                <li class="nav-item active">
+                    <form class="form-inline" th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+                        <button type="submit" class="btn btn-secondary">Sign out</button>
+                    </form>
+                </li>
+                <li class="nav-item active">
+                    <form class="form-inline" th:action="@{/shopping-cart}" sec:authorize="hasRole('ROLE_USER')"
+                          method="get">
+                        <button type="submit" class="btn btn-light" style="margin-left:5px;"><img
+                                src="https://image.flaticon.com/icons/svg/2/2772.svg" height="18px" width="18px"/>
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container" th:if="${restaurant}==null" style="min-height:75vh">
+    <div class="row">
+        <div class="col center-block" style="margin-top:30px;">
+            <h1>
+                <p class="lead text-center" style="font-size:30px;">You are trying to see non existing restaurant's menu! </p>
+            </h1>
+        </div>
+    </div>
+</div>
+
+<!-- Page Content -->
+<div class="container" style="min-height:75vh" th:unless="${restaurant}==null">
+
+    <div class="row" th:unless="${restaurant} == null">
+
+        <div class="col-lg-3">
+
+            <h1 class="my-4" th:text="${restaurant.name}">Shop Name</h1>
+            </br>
+            <div class="row" style="font-size:18px;">
+                <pre><strong><i> Open days :  </i></strong></pre>
+                <p th:text="${restaurant.openDays}"></p>
+            </div>
+            <div class="row" style="font-size:18px;">
+                <pre><strong><i> Open hours :  </i></strong></pre>
+                <p th:text="${restaurant.openFrom}"></p>
+                <pre>  -  </pre>
+                <p th:text="${restaurant.openUntil}"></p>
+            </div>
+            </br>
+            <div class="row" sec:authorize="! hasRole('ROLE_OWNER')"><strong><i>Location:</i></strong></div>
+            <div class="row" sec:authorize="! hasRole('ROLE_OWNER')" id="map">
+                <!-- The map goes here-->
+            </div>
+            <div class="row">
+                <h5 sec:authorize="hasRole('ROLE_OWNER')">Delivery workers:</h5>
+
+            </div>
+            <hr sec:authorize="hasRole('ROLE_OWNER')">
+            <div class="row" sec:authorize="hasRole('ROLE_OWNER')" th:if="${#lists.isEmpty(workerList)}" style="font-size:15px;">
+                <p>You have no delivery workers yet.</p>
+
+            </div>
+            <div class="row" th:unless="${#lists.isEmpty(workerList)}" th:each="worker : ${workerList}"
+                 sec:authorize="hasRole('ROLE_OWNER')">
+                <div class="col-sm-7">
+                    <pre><strong><i>Email:  </i></strong></pre>
+                    <p th:text="${worker.email}"></p></div>
+                <div class="col-sm-3">
+                    <pre><strong><i>Pass:</i></strong></pre>
+                    <p th:text="${worker.id}"></p></div>
+                <div class="col-sm-2">
+                    <a class="btn btn-danger" href="#"
+                       th:href="@{/removeWorker(id=${worker.id},restaurant=${restaurant.id})}"
+                       sec:authorize="hasRole('ROLE_OWNER')">X</a>
+                </div>
+            </div>
+            <hr sec:authorize="hasRole('ROLE_OWNER')">
+            <div sec:authorize="hasRole('ROLE_OWNER')" class="row">
+                <div class="col-sm-6">
+                    <h6>Add a worker: </h6>
+                </div>
+                <div class="col-sm-6">
+                    <button id="addWorker" class="btn btn-secondary" onclick="showFormWorker()">Add
+                    </button>
+                </div>
+                <div class="row" id="workerForm" style="display:none;">
+                    <!-- Default form contact -->
+                    <form class="border border-light p-5" action="#"
+                          th:action="@{/add-delivery-worker(restaurant=${restaurant.id})}" th:object="${formWorker}"
+                          method="post">
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label"><strong>Email</strong></label>
+                            <div class="col-sm-10">
+                                <input type="email" class="form-control mb-4" th:field="*{email}"
+                                       placeholder="something@something.som" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-7">
+                                <button class="btn btn-success" type="submit" style="float: left;">Add worker</button>
+                            </div>
+                            <div class="col-sm-5">
+                                <button class="btn btn-secondary" onclick="hideFormWorker()" style="float: right;">
+                                    Hide
+                                </button>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+        <!-- /.col-lg-3 -->
+
+        <div class="col-lg-9" >
+
+            <div id="carouselExampleIndicators" class="carousel slide my-4" data-ride="carousel">
+                <ol class="carousel-indicators">
+                    <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+                </ol>
+                <div class="carousel-inner" role="listbox">
+                    <div class="carousel-item active">
+                        <img class="d-block img-fluid"
+                             th:src="@{'https://s3.eu-central-1.amazonaws.com/zavrsniradrestaurants/'+${restaurant.owner.id}+'-'+${restaurant.id}+'.jpg'}"
+                             alt="First slide">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" th:unless="${#lists.isEmpty(itemList)}">
+                <div class="col-lg-4 col-md-6 mb-4" th:each="item : ${itemList}">
+                    <div class="card h-100">
+                        <a href="#"><img class="card-img-top"
+                                         th:src="@{'https://s3.eu-central-1.amazonaws.com/zavrsniraditems/'+${restaurant.id}+'-'+${item.id}+'.jpg'}"
+                                         alt=""></a>
+                        <div class="card-body">
+                            <h4 class="card-title">
+                                <a href="#" th:text="${item.name}">Item One</a>
+                            </h4>
+                            <h5 th:text="${item.price}">$24.99</h5>
+                            <p class="card-text" th:text="${item.description}">Lorem ipsum dolor sit amet,
+                                consectetur adipisicing elit. Amet numquam
+                                aspernatur!</p>
+                        </div>
+                        <div class="card-footer">
+
+                            <form action="#"
+                                  th:action="@{/order-item(restaurant=${restaurant.id})}" th:object="${formOrder}"
+                                  method="post" sec:authorize="hasRole('ROLE_USER')"
+                                  th:unless="${#lists.contains(orderedItems,item.id)}">
+                                <input type="hidden" th:name="itemId" th:id="itemId" th:value="${item.id}">
+
+                                <input type="hidden" th:name="itemName" th:id="itemName" th:value="${item.name}">
+
+                                <div class="row" th:unless="${#lists.contains(orderedItems,item.id)}">
+                                    <div class="col-sm-4">
+                                        <label><strong>Qty:</strong></label>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        <input type="number" class="form-control" th:field="*{quantity}"
+                                               min="1" max="100" value="1" required>
+                                    </div>
+                                </div>
+                                </br>
+
+                                <div class="row" th:unless="${#lists.contains(orderedItems,item.id)}">
+                                    <button class="btn btn-outline-success btn-block" type="submit">Add to cart
+                                    </button>
+                                    </br>
+                                </div>
+                                <input type="hidden" th:name="price" th:id="price" th:value="${item.price}">
+
+                                <input type="hidden" th:name="restaurantId" th:id="restaurantId"
+                                       th:value="${item.restaurant.id}">
+
+
+                            </form>
+                            <div class="container" th:if="${#lists.contains(orderedItems,item.id)}"
+                                 style="text-align:center;">
+                                <p><strong><i>In cart</i></strong></p>
+                            </div>
+
+                            <div class="row" th:if="${#httpServletRequest.remoteUser}==null" style="text-align:center;">
+                                <p>You have to be logged in to place an order.</p>
+                            </div>
+                            <div class="row">
+                                <a class="btn btn-outline-danger btn-block" href="#"
+                                   th:href="@{/removeItem(item=${item.id},restaurant=${item.restaurant.id})}"
+                                   sec:authorize="hasRole('ROLE_OWNER')">Remove</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /.row -->
+
+        </div>
+        <!-- /.col-lg-9 -->
+
+    </div>
+    <!-- /.row -->
+    <div class="container">
+        <div class="row" sec:authorize="hasRole('ROLE_OWNER')" id="addButton">
+            <div class="col-sm-3 text-center">
+                <label><strong><i> </i></strong></label></br>
+            </div>
+            <div class="col-sm-3 text-center">
+                <label><strong><i>Add a new menu item:</i></strong></label></br>
+            </div>
+            <div class="col-sm-6 text-center">
+                <button class="btn btn-outline-secondary" onclick="showForm()">Add an item
+                </button>
+                </br>
+                </br>
+            </div>
+        </div>
+    </div>
+    <div class="container" id="itemForm" style="display:none;" sec:authorize="hasRole('ROLE_OWNER')">
+        <!-- Default form contact -->
+        <form class="text-center border border-light p-5" action="#"
+              th:action="@{/add-item(restaurant=${restaurant.id})}" th:object="${formItem}" method="post"
+              enctype="multipart/form-data" style="border:5px solid black">
+
+            <p class="h4 mb-4">Add a menu item</p>
+
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label"><strong>Item name</strong></label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control mb-4" th:field="*{name}" placeholder="e.q Pizza" required>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label"><strong>Unit price (in <i>kn</i>)</strong></label>
+                <div class="col-sm-10">
+                    <input type="number" class="form-control mb-4" th:field="*{price}" placeholder="e.q 10" required>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label"><strong>Description</strong></label>
+                <div class="col-sm-10">
+                    <textarea class="form-control rounded-0" rows="3" th:field="*{description}" required></textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label"><strong>Item image</strong></label>
+                <div class="col-sm-10">
+                    <input type="file" name="file" required>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-7">
+                    <button class="btn btn-success" type="submit" style="float: left;">Add item</button>
+                </div>
+                <div class="col-sm-5">
+                    <button class="btn btn-secondary" onclick="hideForm()" style="float: right;">Hide</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- /.container -->
+
+
+<!-- Footer -->
+<footer class="py-5 bg-dark ">
+    <div class="container">
+        <p class="m-0 text-center text-white">Copyright &copy; Kristijan Vrbanc 2019</p>
+    </div>
+    <!-- /.container -->
+</footer>
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+<script th:inline="javascript">
+     var map;
+      function initMap() {
+       var marker = [[${restaurant.place}]];
+       console.log(marker);
+       var latLng=marker.split(',');
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: new google.maps.LatLng(parseFloat(latLng[0]),parseFloat(latLng[1])),
+          zoom: 11
+        });
+        /*
+       //Listen for click on map
+       google.maps.event.addListener(map,'click',function(event){
+            addMarker({event.latLng});
+       });
+       */
+
+
+       addMarker(new google.maps.LatLng(parseFloat(latLng[0]),parseFloat(latLng[1])));
+
+
+
+
+       //Add Marker Function
+       function addMarker(coords){
+            var marker = new google.maps.Marker({
+            position:coords,
+            map:map,
+            icon:'http://maps.google.com/mapfiles/kml/pal2/icon46.png'
+        });
+       }
+
+
+        /*
+        // Add marker
+        var marker = new google.maps.Marker({
+            position:{lat: 45.8150, lng: 15.9819},
+            map:map,
+            icon:'http://maps.google.com/mapfiles/kml/pal2/icon46.png'
+        });
+
+        var infoWindow= new google.maps.InfoWindow({
+            content:'<p>Restaurant</p>'
+          });
+
+         marker.addListener('click', function(){
+           infoWindow.open(map,marker);
+           });
+        */
+      }
+
+
+
+
+  function showForm() {
+  var x = document.getElementById("itemForm");
+  x.style.display = "block";
+  var y= document.getElementById("addButton");
+  y.style.display = "none";
+  }
+
+  function hideForm() {
+  var x = document.getElementById("itemForm");
+  x.style.display = "none";
+  var y= document.getElementById("addButton");
+  y.style.display = "inline";
+  }
+
+  function showFormWorker() {
+  var x = document.getElementById("workerForm");
+  x.style.display = "block";
+  var y= document.getElementById("addWorker");
+  y.style.display = "none";
+  }
+
+  function hideFormWorker() {
+  var x = document.getElementById("workerForm");
+  x.style.display = "none";
+  var y= document.getElementById("addWorker");
+  y.style.display = "inline";
+  }
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<!-- Google maps scripts -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCWpiFQMp3bI7-CrQJNd8bJ0SAU5BBj5Ag&callback=initMap"
+        async defer></script>
+
+</body>
+
+</html>

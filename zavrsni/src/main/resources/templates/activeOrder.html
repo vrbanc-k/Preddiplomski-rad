@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title>Active order</title>
+    <style>
+        body {
+            padding-top: 56px;
+        }
+        #map{
+            height:300px;
+            width:100%;
+        }
+
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="/home">Food Delivery System</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/home">Home
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/order-list">Orders
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item ">
+                    <span class="navbar-text" sec:authorize="isAuthenticated()" sec:authentication="name"
+                          style="padding-right:7px;padding-left:5px;">
+                    </span>
+                </li>
+                <li class="nav-item active">
+                    <form class="form-inline" th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+                        <button type="submit" class="btn btn-secondary">Sign out</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<!-- Page Content -->
+<div class="container" style="min-height:75vh">
+
+    <!-- Page Heading -->
+    <h1 class="my-4">Active order:
+    </h1>
+    <div class="container" th:if="${message}!=null">
+        <div class="row">
+            <div class="col center-block" style="margin-top:30px;">
+                <h1>
+                    <p class="lead text-center" th:text="${message}" style="font-size:30px;"></p>
+                </h1>
+            </div>
+        </div>
+    </div>
+    <div class="container" th:unless="${orderToDeliver != null}">
+        <div class="row">
+            <div class="col center-block" style="margin-top:30px;">
+                <h1>
+                    <p class="lead text-center" style="font-size:30px;">You have no active orders.</p>
+                </h1>
+            </div>
+        </div>
+    </div>
+    <table id="cart" class="table table-hover table-condensed" th:if="${itemsToDeliver != null}">
+        <thead>
+        <tr>
+            <th style="width:50%">Product</th>
+            <th style="width:10%">Price</th>
+            <th style="width:8%">Quantity</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="entry : ${itemsToDeliver}">
+            <td data-th="Product">
+                <div class="row">
+                    <div class="col-sm-2 hidden-xs"><img
+                            th:src="@{'https://s3.eu-central-1.amazonaws.com/zavrsniraditems/'+${entry.key.restaurant.id}+'-'+${entry.key.id}+'.jpg'}"
+                            alt="..." class="img-responsive" height="50px" width="50px"/></div>
+                    <div class="col-sm-10">
+                        <h4 class="nomargin" th:text="${entry.key.name}">Product </h4>
+                    </div>
+                </div>
+            </td>
+            <td data-th="Price" th:text="${entry.key.price}+' kn'"></td>
+            <td data-th="Quantity" class="row">
+                <pre>    </pre>
+                <p th:text="${entry.value}"></p>
+            </td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr>
+            <td colspan="2" class="hidden-xs"></td>
+            <td class="hidden-xs text-center"><strong><p th:text="'Total: '+${total}+' kn'"></p></strong></td>
+        </tr>
+        </tfoot>
+    </table>
+    </br>
+    </br>
+    </br>
+    <hr th:if="${itemsToDeliver != null }">
+    <div class="row" th:if="${itemsToDeliver != null }">
+        <label class="col-sm-2 col-form-label"><strong>User's email:</strong></label>
+        <div class="col-sm-3">
+            <p th:text="${orderToDeliver.deliveringTo}">something</p>
+        </div>
+        <label class="col-sm-2 col-form-label"><strong>Contact num. :</strong></label>
+        <div class="col-sm-3">
+            <p th:text="${phone}">something</p>
+        </div>
+    </div>
+    <hr th:if="${itemsToDeliver != null }">
+    <div class="row" th:if="${itemsToDeliver != null }">
+        <div class="col-lg-8" id="map" th:if="${itemsToDeliver != null }" style="border-style:groove;">
+            <!-- the map goes here -->
+        </div>
+        <div class="col-lg-1"></div>
+        <div class="col-lg-3">
+        <div th:if="${itemsToDeliver != null }" class="row">
+            <p style="font-size:16px;"><i>Link to Google Maps directions:</i></p></br>
+            <a href="#" class="btn btn-outline-primary active" role="button" aria-pressed="true" id="directionsLink">Directions</a>
+        </div>
+        <div class="row">
+            </br>
+        </div>
+            <div class="row">
+                </br>
+            </div>
+            <div class="row">
+                </br>
+            </div>
+            <div class="row">
+                </br>
+            </div>
+            <div class="row">
+                </br>
+            </div>
+        <div th:if="${itemsToDeliver != null }" class="row">
+            <p style="font-size:16px;"><strong><i>Complete delivery:</i></strong></p></br>
+            <form th:action="@{/complete-order(id=${orderToDeliver.id})}" method="post">
+                <button class="btn btn-success btn-lg" type="submit">Delivery completed</button>
+            </form>
+        </div>
+        </div>
+    </div>
+    </br>
+    </br>
+
+</div>
+<!-- /.container -->
+<!-- Footer -->
+<footer class="py-5 bg-dark ">
+    <div class="container">
+        <p class="m-0 text-center text-white">Copyright &copy; Kristijan Vrbanc, 2019</p>
+    </div>
+    <!-- /.container -->
+</footer>
+
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+<!-- Google Maps script-->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCWpiFQMp3bI7-CrQJNd8bJ0SAU5BBj5Ag&callback=mapLocation"
+        async defer></script>
+<script th:inline="javascript">
+ function mapLocation() {
+  var directionsDisplay;
+  var directionsService = new google.maps.DirectionsService();
+  var map;
+  var startingPos=[[${from}]];
+  var startingLatLng=startingPos.split(',');
+  console.log(startingLatLng);
+  var destinationPos=[[${to}]];
+  var destinationLatLng=destinationPos.split(',');
+  console.log(destinationLatLng);
+
+
+  var directionsLink=document.getElementById('directionsLink');
+  var link="https://www.google.com/maps/dir/?api=1&origin="+startingPos+"&destination="+destinationPos;
+  directionsLink.href=link;
+
+  initialize();
+
+  function initialize() {
+    directionsDisplay = new google.maps.DirectionsRenderer();
+    var zagreb = new google.maps.LatLng(45.8150,15.9819);
+    var mapOptions = {
+      zoom: 13,
+      center: zagreb
+    };
+    map = new google.maps.Map(document.getElementById('map'), mapOptions);
+    directionsDisplay.setMap(map);
+    calcRoute();
+  }
+
+  function calcRoute() {
+    var start = new google.maps.LatLng(parseFloat(startingLatLng[0]), parseFloat(startingLatLng[1]));
+    var end = new google.maps.LatLng(parseFloat(destinationLatLng[0]), parseFloat(destinationLatLng[1]));
+    var request = {
+      origin: start,
+      destination: end,
+      travelMode: google.maps.TravelMode.DRIVING
+    };
+    directionsService.route(request, function(response, status) {
+      if (status == google.maps.DirectionsStatus.OK) {
+        directionsDisplay.setDirections(response);
+        directionsDisplay.setMap(map);
+      } else {
+        alert("Directions Request from " + start.toUrlValue(6) + " to " + end.toUrlValue(6) + " failed: " + status);
+      }
+    });
+  }
+}
+
+</script>
+</body>
+</html>

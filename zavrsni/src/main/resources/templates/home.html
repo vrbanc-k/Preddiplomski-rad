@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title>Homepage</title>
+
+    <style>
+        body {
+  padding-top: 56px;
+}
+
+.carousel-item {
+  height: 65vh;
+  min-height: 300px;
+  background: no-repeat center center scroll;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+
+.portfolio-item {
+  margin-bottom: 30px;
+}
+
+@font-face {
+  font-family: 'Glyphicons Halflings';
+  src: url('https://netdna.bootstrapcdn.com/bootstrap/3.0.0/fonts/glyphicons-halflings-regular.eot');
+  src: url('../fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('https://netdna.bootstrapcdn.com/bootstrap/3.0.0/fonts/glyphicons-halflings-regular.woff') format('woff'), url('https://netdna.bootstrapcdn.com/bootstrap/3.0.0/fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('https://netdna.bootstrapcdn.com/bootstrap/3.0.0/fonts/glyphicons-halflings-regular.svg') format('svg');
+}
+
+    </style>
+
+</head>
+
+<body>
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="/home">Food Delivery System</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/home">Home
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="#" th:href="@{/login}" th:if="${#httpServletRequest.remoteUser}==null">Login
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="#" th:href="@{/register}" th:if="${#httpServletRequest.remoteUser}==null" >Register
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="#" th:href="@{/my-restaurants}" sec:authorize="hasRole('ROLE_OWNER')">My
+                        restaurants
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="#" th:href="@{/restaurant-list}" sec:authorize="! hasRole('ROLE_OWNER') && ! hasRole('ROLE_WORKER')">Restaurants
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="#" th:href="@{/active-order}" sec:authorize="hasRole('ROLE_WORKER')">Active
+                        Order
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="#" th:href="@{/order-list}" sec:authorize="hasRole('ROLE_WORKER')">Orders
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item ">
+                    <span class="navbar-text" sec:authorize="isAuthenticated()" sec:authentication="name"
+                          style="padding-right:7px;padding-left:5px;">
+                    </span>
+                </li>
+                <li class="nav-item active">
+                    <form class="form-inline" th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+                        <button type="submit" class="btn btn-secondary">Sign out</button>
+                    </form>
+                </li>
+                <li class="nav-item active">
+                    <form class="form-inline" th:action="@{/shopping-cart}" sec:authorize="hasRole('ROLE_USER')"
+                          method="get">
+                        <button type="submit" class="btn btn-light" style="margin-left:5px;"><img
+                                src="https://image.flaticon.com/icons/svg/2/2772.svg" height="18px" width="18px"/>
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<header>
+    <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+        <ol class="carousel-indicators">
+            <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+            <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+            <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+        </ol>
+        <div class="carousel-inner" role="listbox">
+            <!-- Slide One - Set the background image for this slide in the line below -->
+            <div class="carousel-item active"
+                 style="background-image: url('https://images.unsplash.com/photo-1428515613728-6b4607e44363?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=3150&q=80')">
+                <div class="carousel-caption d-none d-md-block">
+                    <h3>Choose</h3>
+                    <p>Choose a restaurant that best suits your taste.</p>
+                </div>
+            </div>
+            <!-- Slide Two - Set the background image for this slide in the line below -->
+            <div class="carousel-item"
+                 style="background-image: url('https://images.unsplash.com/photo-1460306855393-0410f61241c7?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1652&q=80')">
+                <div class="carousel-caption d-none d-md-block">
+                    <h3>Order</h3>
+                    <p>Order the food you desire.</p>
+                </div>
+            </div>
+            <!-- Slide Three - Set the background image for this slide in the line below -->
+            <div class="carousel-item"
+                 style="background-image: url('https://images.unsplash.com/photo-1548047635-559d51fe852c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2468&q=80')">
+                <div class="carousel-caption d-none d-md-block">
+                    <h3>Wait</h3>
+                    <p>Wait for your food to arrive.</p>
+                </div>
+            </div>
+        </div>
+        <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
+        </a>
+    </div>
+</header>
+
+<!-- Page Content -->
+<div class="container">
+
+    <h1 class="my-4">Welcome to Food delivery system</h1>
+
+    <!-- Short system description-->
+    <div class="row">
+        <div class="col-lg-6">
+            <p><strong>The food delivery system</strong> provides:</p>
+            <ul>
+                <li>
+                    <strong>Fast and intuitive food ordering </strong>
+                </li>
+                <li>Vast variety of restaurants</li>
+                <li>Quick delivery</li>
+                <li>Fast growing community</li>
+            </ul>
+            </br>
+            <p>Here is a quick overview of the restaurants locations:</p>
+            </br>
+            </br>
+        </div>
+        <div class="col-lg-6" id="map">
+            <!-- the map goes here -->
+        </div>
+    </div>
+    <!-- /.row -->
+
+    <hr>
+
+
+</div>
+<!-- /.container -->
+
+<!-- Footer -->
+<footer class="py-5 bg-dark ">
+    <div class="container">
+        <p class="m-0 text-center text-white">Copyright &copy; Kristijan Vrbanc 2019</p>
+    </div>
+    <!-- /.container -->
+</footer>
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+
+<!-- Google maps script-->
+<script th:inline="javascript">
+      var map;
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: 45.8150, lng: 15.9819},
+          zoom: 11
+        });
+        /*
+       //Listen for click on map
+       google.maps.event.addListener(map,'click',function(event){
+            addMarker({event.latLng});
+       });
+       */
+
+
+       //Array of markers
+
+
+       var markers = [[${markers}]];
+
+
+       //Loop through markers
+       for(var i=0;i< markers.length;i++){
+            var myLatlng = new google.maps.LatLng(parseFloat(markers[i]),parseFloat(markers[i+1]));
+            addMarker(myLatlng);
+            i++;
+       }
+
+       //Add Marker Function
+       function addMarker(coords){
+            var marker = new google.maps.Marker({
+            position:coords,
+            map:map,
+            icon:'http://maps.google.com/mapfiles/kml/pal2/icon46.png'
+        });
+       }
+
+
+        /*
+        // Add marker
+        var marker = new google.maps.Marker({
+            position:{lat: 45.8150, lng: 15.9819},
+            map:map,
+            icon:'http://maps.google.com/mapfiles/kml/pal2/icon46.png'
+        });
+
+        var infoWindow= new google.maps.InfoWindow({
+            content:'<p>Restaurant</p>'
+          });
+
+         marker.addListener('click', function(){
+           infoWindow.open(map,marker);
+           });
+        */
+      }
+
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCWpiFQMp3bI7-CrQJNd8bJ0SAU5BBj5Ag&callback=initMap"
+        async defer></script>
+
+</body>
+
+</html>
